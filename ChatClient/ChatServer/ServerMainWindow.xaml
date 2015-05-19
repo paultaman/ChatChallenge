@@ -1,4 +1,4 @@
-﻿<Window x:Class="ChatServer.MainWindow"
+﻿<Window x:Class="ChatServer.ServerMainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Chat Server" Height="319" Width="343  ">

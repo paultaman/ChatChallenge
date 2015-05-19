@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Windows;
 using Microsoft.AspNet.SignalR.Client;
 
@@ -12,10 +11,10 @@ namespace ChatClient
     /// clients whether they are hosted in WinForms, WPF, or a web application.
     /// For simplicity, MVVM will not be used for this sample.
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ClientMainWindow : Window
     {
         /// <summary>
-        /// This name is simply added to sent messages to identify the user; this 
+        /// This name is simply added to send messages to identify the user; this 
         /// sample does not include authentication.
         /// </summary>
         public string UserName { get; set; }
@@ -23,14 +22,14 @@ namespace ChatClient
         const string ServerURI = "http://localhost:8080/signalr";
         public HubConnection Connection { get; set; }
 
-        public MainWindow()
+        public ClientMainWindow()
         {
             InitializeComponent();
         }
 
         private void ButtonSend_Click(object sender, RoutedEventArgs e)
         {
-            HubProxy.Invoke("Send", UserName, TextBoxMessage.Text);
+            HubProxy.Invoke("Send", UserName, TextBoxUserTarget.Text, TextBoxMessage.Text);
             TextBoxMessage.Text = string.Empty;
             TextBoxMessage.Focus();
         }
@@ -65,7 +64,7 @@ namespace ChatClient
             SignInPanel.Visibility = Visibility.Collapsed;
             ChatPanel.Visibility = Visibility.Visible;
             ButtonSend.IsEnabled = true;
-            TextBoxMessage.Focus();
+            TextBoxUserTarget.Focus();
             RichTextBoxConsole.AppendText("Connected to server at " + ServerURI + "\r");
         }
 

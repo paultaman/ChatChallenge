@@ -17,12 +17,12 @@ namespace ChatServer
     /// functionality as the other hubs in the SignalR Getting Started tutorials.
     /// For simplicity, MVVM will not be used for this sample.
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ServerMainWindow : Window
     {
         public IDisposable SignalR { get; set; }
         const string ServerURI = "http://localhost:8080";
 
-        public MainWindow()
+        public ServerMainWindow()
         {
             InitializeComponent();
         }
@@ -67,6 +67,7 @@ namespace ChatServer
             Dispatcher.Invoke(() => ButtonStop.IsEnabled = true);
             WriteToConsole("Server started at " + ServerURI);
         }
+
         ///This method adds a line to the RichTextBoxConsole control, using Dispatcher.Invoke if used
         /// from a SignalR hub thread rather than the UI thread.
         public void WriteToConsole(string message)
@@ -81,6 +82,7 @@ namespace ChatServer
             RichTextBoxConsole.AppendText(message + "\r");
         }
     }
+
     /// <summary>
     /// Used by OWIN's startup process. 
     /// </summary>
@@ -92,6 +94,7 @@ namespace ChatServer
             app.MapSignalR();
         }
     }
+
     /// <summary>
     /// Echoes messages sent using the Send message by calling the
     /// addMessage method on the client. Also reports to the console
@@ -103,19 +106,27 @@ namespace ChatServer
         {
             Clients.All.addMessage(name, message);
         }
+
+        public void Send(string name, string target, string message)
+        {
+            Clients.User(name).addMessage(name, message);
+            Clients.User(target).addMessage(name, message);
+        }
+
         public override Task OnConnected()
         {
             //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
             Application.Current.Dispatcher.Invoke(() =>
-                ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
+                ((ServerMainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
 
             return base.OnConnected();
         }
+
         public override Task OnDisconnected(bool stopCalled)
         {
             //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
             Application.Current.Dispatcher.Invoke(() =>
-                ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
+                ((ServerMainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
 
             return base.OnDisconnected(stopCalled);
         }
