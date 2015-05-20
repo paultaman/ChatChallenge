@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ChatDatabase
 {
-    class ChatContext : DbContext
+    public class ChatContext : DbContext
     {
         public DbSet<ChatRecord> ChatHistory { get; set; }
     }

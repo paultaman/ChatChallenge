@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using ChatDatabase;
 
 namespace ChatServer
 {
@@ -110,6 +111,7 @@ namespace ChatServer
 
         public void Send(string name, string message)
         {
+            // unused -- was an earlier iteration of the user to user message
             Clients.All.addMessage(name, message);
         }
 
@@ -119,16 +121,35 @@ namespace ChatServer
             List<string> targetConnections;
             userConnections.TryGetValue(source, out sourceConnections);
             userConnections.TryGetValue(target, out targetConnections);
-
-            //Clients.All.addMessage(source, message);
+            
             if (sourceConnections != null)
+            {
                 Clients.Clients(sourceConnections).addMessage(source, message);
+                //ChatHistoryService.LogMessage(source, message);
+            }                
 
             if (targetConnections != null)
                 Clients.Clients(targetConnections).addMessage(source, message);
             else
                 Clients.Clients(sourceConnections).addMessage(source, "<Failed to find user>");
+        }
 
+        public void FetchHistory(string name)
+        {
+            List<string> nameConnections;
+            userConnections.TryGetValue(name, out nameConnections);
+
+            if (nameConnections != null)
+            {
+                List<ChatRecord> chatHistory = ChatHistoryService.FetchChatHistory(name);
+                if (chatHistory != null)
+                {
+                    chatHistory = chatHistory.OrderBy(cr => cr.TimeStamp).ToList();
+                    foreach(var record in chatHistory)
+                        Clients.Clients(nameConnections).addMessage(record.User, record.Message);
+                }
+                    
+            }
         }
 
         public override Task OnConnected()

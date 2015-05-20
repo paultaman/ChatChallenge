@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChatContext.cs" />
+    <Compile Include="ChatHistoryService.cs" />
     <Compile Include="ChatRecord.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

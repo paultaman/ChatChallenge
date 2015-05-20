@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ChatDatabase
 {
-    class ChatRecord
+    public class ChatRecord
     {
         [Key]
         public int RecordId { get; set; }

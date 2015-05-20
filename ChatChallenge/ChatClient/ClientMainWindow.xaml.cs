@@ -10,14 +10,9 @@ namespace ChatClient
     /// lets the user pick a user name, connect to the server asynchronously
     /// to not block the UI thread, and send chat messages to all connected 
     /// clients whether they are hosted in WinForms, WPF, or a web application.
-    /// For simplicity, MVVM will not be used for this sample.
     /// </summary>
     public partial class ClientMainWindow : Window
     {
-        /// <summary>
-        /// This name is simply added to send messages to identify the user; this 
-        /// sample does not include authentication.
-        /// </summary>
         public string UserName { get; set; }
         public IHubProxy HubProxy { get; set; }
         const string ServerURI = "http://localhost:8080/signalr";
@@ -31,6 +26,7 @@ namespace ChatClient
         private void ButtonSend_Click(object sender, RoutedEventArgs e)
         {
             HubProxy.Invoke("Send", UserName, TextBoxUserTarget.Text, TextBoxMessage.Text);
+            //HubProxy.Invoke("FetchHistory", "Bob");
             TextBoxMessage.Text = string.Empty;
             TextBoxMessage.Focus();
         }
