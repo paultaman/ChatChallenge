@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Collections.Generic;
 using System.Windows;
 using Microsoft.AspNet.SignalR.Client;
 
@@ -40,7 +41,12 @@ namespace ChatClient
         /// </summary>
         private async void ConnectAsync()
         {
-            Connection = new HubConnection(ServerURI);
+            Connection = new HubConnection(ServerURI, 
+                new Dictionary<string, string>()
+                {
+                    { "user", UserNameTextBox.Text }
+                });
+
             Connection.Closed += Connection_Closed;
             HubProxy = Connection.CreateHubProxy("MyHub");
             //Handle incoming event from server: use Invoke to write to console from SignalR's thread
@@ -64,6 +70,7 @@ namespace ChatClient
             SignInPanel.Visibility = Visibility.Collapsed;
             ChatPanel.Visibility = Visibility.Visible;
             ButtonSend.IsEnabled = true;
+            LabelUserSource.Content = UserName;
             TextBoxUserTarget.Focus();
             RichTextBoxConsole.AppendText("Connected to server at " + ServerURI + "\r");
         }

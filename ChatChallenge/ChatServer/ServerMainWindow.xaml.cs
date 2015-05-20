@@ -3,6 +3,9 @@ using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
 using Owin;
 using System;
+using System.Linq;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -102,19 +105,40 @@ namespace ChatServer
     /// </summary>
     public class MyHub : Hub
     {
+        private static readonly ConcurrentDictionary<string, List<string>> userConnections = 
+            new ConcurrentDictionary<string, List<string>>();
+
         public void Send(string name, string message)
         {
             Clients.All.addMessage(name, message);
         }
 
-        public void Send(string name, string target, string message)
+        public void Send(string source, string target, string message)
         {
-            Clients.User(name).addMessage(name, message);
-            Clients.User(target).addMessage(name, message);
+            List<string> sourceConnections;
+            List<string> targetConnections;
+            userConnections.TryGetValue(source, out sourceConnections);
+            userConnections.TryGetValue(target, out targetConnections);
+
+            //Clients.All.addMessage(source, message);
+            if (sourceConnections != null)
+                Clients.Clients(sourceConnections).addMessage(source, message);
+
+            if (targetConnections != null)
+                Clients.Clients(targetConnections).addMessage(source, message);
+            else
+                Clients.Clients(sourceConnections).addMessage(source, "<Failed to find user>");
+
         }
 
         public override Task OnConnected()
         {
+            var connections = userConnections.GetOrAdd(Context.QueryString["user"], new List<string>());
+            lock (connections)
+            {
+                connections.Add(Context.ConnectionId);
+            }
+
             //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
             Application.Current.Dispatcher.Invoke(() =>
                 ((ServerMainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
@@ -124,6 +148,25 @@ namespace ChatServer
 
         public override Task OnDisconnected(bool stopCalled)
         {
+            List<string> connections;
+            string user = Context.QueryString["user"];
+            userConnections.TryGetValue(user, out connections);
+
+            if (connections != null)
+            {
+                lock (connections)
+                {
+                    connections.Remove(Context.ConnectionId);
+
+                    if (!connections.Any())
+                    {
+                        List<string> removedConnections;
+                        userConnections.TryRemove(user, out removedConnections);
+                    }
+                }
+                
+            }
+
             //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
             Application.Current.Dispatcher.Invoke(() =>
                 ((ServerMainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
